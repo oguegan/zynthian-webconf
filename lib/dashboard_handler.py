@@ -336,17 +336,19 @@ class DashboardHandler(ZynthianBasicHandler):
 	@staticmethod
 	def get_i2c_chips():
 		res = []
-		out = check_output("gpio i2cd", shell=True).decode().split("\n")
+		out = check_output("gpio i2cd 0", shell=True).decode().split("\n")
 		if len(out) > 3:
 			for i in range(1, 8):
 				for adr in out[i][4:].split(" "):
 					try:
 						adr = int(adr, 16)
 						if adr>=0x20 and adr<=0x27:
-							out1 = check_output("i2cget -y 1 {} 0x01".format(adr), shell=True).decode().strip()
-							out2 = check_output("i2cget -y 1 {} 0x10".format(adr), shell=True).decode().strip()
+							out1 = check_output("i2cget -y 0 {} 0x01".format(adr), shell=True).decode().strip()
+							out2 = check_output("i2cget -y 0 {} 0x10".format(adr), shell=True).decode().strip()
 							if out1 == '0x00' and out2 == '0x00':
 								res.append("MCP23008@0x{:02X}".format(adr))
+							elif out1 == '0x4b' and out2 == '0x42':
+								res.append("AT2560@0x{:@2X}".format(adr))
 							else:
 								res.append("MCP23017@0x{:02X}".format(adr))
 						elif adr>=0x48 and adr<=0x4B:
